@@ -3,20 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>goit-advancedjs-hw-03</title>
-    <link rel="stylesheet" href="./css/index.css" />
-
-    <script type="module" src="./main.js" defer></script>
+    <title>HW 03</title>
+    <link rel="stylesheet" href="./css/styles.css" />
   </head>
   <body>
-    <section class="gallery-section">
-      <div class="container">
-        <form class="form search-form js-search-form">
-          <input class="search-input js-search-input" type="text" name="user_query" placeholder="Search images..." required />
-          <button class="search-btn" type="submit">Search</button>
-        </form>
-        <ul class="gallery js-gallery"></ul>
-        <span class="loader is-hidden js-loader"></span>
-      </div>
-    </section>
+    <form class="form js-search-form">
+      <input
+        type="text"
+        class="search-input js-search-input"
+        placeholder="Search images..."
+      />
+      <button type="submit" class="search-button js-search-button">
+        Search
+      </button>
+    </form>
+
+    <span class="loader js-loader">Load&nbsp;ng</span>
+
+    <ul class="gallery js-gallery"></ul>
+
+    <script type="module" src="./main.js"></script>
+  </body>
 </html>

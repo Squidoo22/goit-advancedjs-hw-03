@@ -1,58 +1,59 @@
-import iziToast from "izitoast";
-import SimpleLightbox from "simplelightbox";
-import { createGalleryCardTemplate } from "./js/render-functions";
-import { fetchPhotosByQuery } from "./js/pixabay-api";
+import iziToast from 'izitoast';
+import SimpleLightbox from 'simplelightbox';
+import 'izitoast/dist/css/iziToast.min.css';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
-const searchFormEl = document.querySelector('.js-search-form');
-const galleryEl = document.querySelector('.js-gallery');
-const loaderEl = document.querySelector('.js-loader');
+import { getPhotos } from './js/pixabay-api';
+import { createGalleryCard } from './js/render-functions';
 
-let simplelightbox = new SimpleLightbox('.gallery-card a', {
-    captionsData: 'alt',
-    captionDelay: 250,
-});
-
-const onSearchFormSubmit = event => {
-    event.preventDefault();
-
-    const inputValue = event.currentTarget.elements.user_query.value.trim();
-
-    if (inputValue === '') {
-        iziToast.error({
-            message: "Search value should not be empty!",
-            position: "topRight",
-        });
-        return;
-    }
-
-    const searchParams = new URLSearchParams({
-        key: "47600623-616adcc60326fea30dcc03763",
-        q: inputValue,
-        image_type: "photo",
-        orientation: "horizontal",
-        safesearch: true,
-    });
-
-    loaderEl.classList.remove('is-hidden');
-
-    fetchPhotosByQuery(searchParams)
-        .finally(() => {
-            loaderEl.classList.add('is-hidden');
-        })
-        .then(photos => {
-            if (photos.total === 0) {
-                iziToast.error({
-                    message: "Sorry, there are no images matching your search query. Please try again!",
-                    position: "topRight",
-                });
-                galleryEl.innerHTML = '';
-                return;
-            };
-            galleryEl.innerHTML = createGalleryCardTemplate(photos.hits);
-            simplelightbox.refresh();
-        })
-        .catch(err => console.log(err)
-        );
+const refs = {
+  form: document.querySelector('.js-search-form'),
+  input: document.querySelector('.js-search-input'),
+  submitButton: document.querySelector('.js-search-button'),
+  gallery: document.querySelector('.js-gallery'),
+  loader: document.querySelector('.js-loader'),
 };
 
-searchFormEl.addEventListener('submit', onSearchFormSubmit);
+function handleFormSubmit(event) {
+  event.preventDefault();
+  refs.gallery.innerHTML = '';
+
+  const inputValue = refs.input.value;
+  if (inputValue.trim() === '') {
+    iziToast.error({
+      title: 'Error',
+      message: 'Please enter the search query!',
+    });
+    return;
+  }
+  refs.loader.classList.add('active');
+  getPhotos(inputValue)
+    .then(data => {
+      if (data.hits.length === 0) {
+        iziToast.error({
+          title: 'Error',
+          message:
+            'Sorry, there are no images matching your search query. Please try again!',
+        });
+        return;
+      }
+
+      refs.gallery.innerHTML = data.hits
+        .map(imageInfo => createGalleryCard(imageInfo))
+        .join('');
+      let gallery = new SimpleLightbox('.gallery-link', { captionDelay: 250 });
+      gallery.refresh();
+    })
+    .catch(error => {
+      iziToast.error({
+        title: 'Error',
+        message: 'Something went wrong. Please try again!',
+      });
+    })
+    .finally(() => {
+      refs.loader.classList.remove('active');
+    });
+  refs.form.reset();
+}
+
+refs.form.addEventListener('submit', handleFormSubmit);
